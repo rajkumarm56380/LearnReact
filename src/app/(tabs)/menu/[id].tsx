@@ -38,7 +38,9 @@ const ProductDetailsScreen = () => {
             }}
             style={[
               styles.size,
-              { backgroundColor: selectedSize === size ? "gainboro" : "white" },
+              {
+                backgroundColor: selectedSize === size ? "gainsboro" : "white",
+              },
             ]}
             key={size}
           >

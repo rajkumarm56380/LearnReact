@@ -1,3 +1,4 @@
+import { userInsertProduct } from "@/src/api/products";
 import * as ImagePicker from "expo-image-picker";
 import { Stack, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
@@ -13,6 +14,8 @@ const createProductScreen = () => {
   const [image, setImage] = useState<string | null>(null);
   const { id } = useLocalSearchParams();
   const isUpdating = !!id;
+
+  const { mutate: insertProduct } = userInsertProduct();
 
   const resetFields = () => {
     setName("");
@@ -62,6 +65,7 @@ const createProductScreen = () => {
     console.warn("Creating product == ", name, price);
 
     // save in the database
+    insertProduct({ name, price: parseFloat(price), image });
     resetFields();
   };
 

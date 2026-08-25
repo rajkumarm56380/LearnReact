@@ -12,7 +12,7 @@ type ProductListItemProps = {
 
 const ProductListItem = ({ product }: ProductListItemProps) => {
   const segments = useSegments();
-  console.log(segments);
+  console.log("Components ==>" + segments);
 
   return (
     <Link href={`/${segments[0]}/menu/${product.id}` as Href} asChild>

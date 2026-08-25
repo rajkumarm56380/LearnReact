@@ -30,47 +30,52 @@ export default function AuthProvider({ children }: PropsWithChildren) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchProfile = async (currentSession: Session | null) => {
-      if (!currentSession) {
-        setProfile(null);
-        return;
-      }
-
-      const { data } = await supabase
-        .from("profiles")
-        .select("id, group")
-        .eq("id", currentSession.user.id)
-        .single();
-      setProfile(data as Profile | null);
-    };
-
+    // Fetch session
     const fetchSession = async () => {
       const {
-        data: { session: currentSession },
+        data: { session },
       } = await supabase.auth.getSession();
-      setSession(currentSession);
-      await fetchProfile(currentSession);
+      setSession(session);
+      setLoading(false);
+
+      if (session) {
+        const { data } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", session.user.id)
+          .single();
+        // 2. Convert the returned object/array to a JSON string
+        const jsonString = JSON.stringify(data);
+        // 3. Optional: Make the string human-readable with indentation
+        const prettyJsonString = JSON.stringify(data, null, 2);
+        console.log("jsonString. ==>" + jsonString);
+        console.log("profile prettyJsonString ==> " + prettyJsonString);
+        setProfile(data || null);
+      }
       setLoading(false);
     };
 
+    // Fetch session
     fetchSession();
-    const { data: authListener } = supabase.auth.onAuthStateChange(
-      (_event, currentSession) => {
-        setSession(currentSession);
-        fetchProfile(currentSession);
-      },
-    );
 
-    return () => {
-      authListener.subscription.unsubscribe();
-    };
+    // Fetch Listener
+    supabase.auth.onAuthStateChange((_event, session) => {
+      // setLoading(true);
+      setSession(session);
+    });
   }, []);
 
-  console.log("AuthProvider Profile ==> " + profile);
+  console.log("profile group ==> " + profile);
+  console.log("profile GROUP TRUE or FALSE ==> " + profile?.group === "ADMIN");
 
   return (
     <AuthContext.Provider
-      value={{ session, loading, profile, isAdmin: profile?.group === "ADMIN" }}
+      value={{
+        session,
+        loading,
+        profile,
+        isAdmin: profile?.group === "ADMIN",
+      }}
     >
       {children}
     </AuthContext.Provider>

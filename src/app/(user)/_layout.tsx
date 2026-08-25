@@ -4,6 +4,7 @@ import Colors from "@/src/app/constants/Colors";
 import { useAuth } from "@/src/provider/AuthProvider";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { Redirect, Tabs } from "expo-router";
+import { ActivityIndicator } from "react-native";
 
 function TabBarIcon(props: {
   name: React.ComponentProps<typeof FontAwesome>["name"];
@@ -14,10 +15,14 @@ function TabBarIcon(props: {
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
-  const { session } = useAuth();
+  const { session, loading } = useAuth();
 
-  if (session) {
-    <Redirect href={"/"} />;
+  if (loading) {
+    return <ActivityIndicator />;
+  }
+
+  if (!(session != null)) {
+    return <Redirect href={"/"} />;
   }
 
   return (

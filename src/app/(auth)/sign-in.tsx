@@ -1,11 +1,12 @@
 import { supabase } from "@/src/lib/supabase";
-import { Link, Stack } from "expo-router";
+import { Link, Stack, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import { Alert, StyleSheet, Text, TextInput, View } from "react-native";
 import Button from "../components/Button";
 import Colors from "../constants/Colors";
 
 const SignInScreen = () => {
+  const { redirect } = useLocalSearchParams<{ redirect?: string }>();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -16,7 +17,9 @@ const SignInScreen = () => {
       email,
       password,
     });
+
     if (error) Alert.alert(error.message);
+    //else router.replace(redirect === "admin" ? "/(admin)" : "/(user)");
     setLoading(false);
   }
 

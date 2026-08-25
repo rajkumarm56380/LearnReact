@@ -1,7 +1,12 @@
-import { userInsertProduct } from "@/src/api/products";
+import {
+  useDeleteProduct,
+  useProduct,
+  userInsertProduct,
+  useUpdateProduct,
+} from "@/src/api/products";
 import * as ImagePicker from "expo-image-picker";
-import { Stack, useLocalSearchParams } from "expo-router";
-import { useState } from "react";
+import { Stack, useLocalSearchParams, useRouter } from "expo-router";
+import { useEffect, useState } from "react";
 import { Alert, Image, StyleSheet, Text, TextInput, View } from "react-native";
 import Button from "../../components/Button";
 import { defaultPizzaImage } from "../../components/ProductListItem";
@@ -12,11 +17,27 @@ const createProductScreen = () => {
   const [price, setPrice] = useState("");
   const [errors, setErrors] = useState("");
   const [image, setImage] = useState<string | null>(null);
-  const { id } = useLocalSearchParams();
-  const isUpdating = !!id;
 
+  const { id: idString } = useLocalSearchParams();
+  const id = parseFloat(
+    typeof idString === "string" ? idString : idString?.[0],
+  );
+  const isUpdating = !!idString;
+  const { data: updatingProduct } = useProduct(id);
+  const router = useRouter();
+
+  // Supabase Database
   const { mutate: insertProduct } = userInsertProduct();
+  const { mutate: updateProduct } = useUpdateProduct();
+  const { mutate: deleteProduct } = useDeleteProduct();
 
+  useEffect(() => {
+    if (updatingProduct) {
+      setName(updatingProduct.name);
+      setPrice(updatingProduct.price.toString());
+      setImage(updatingProduct.image);
+    }
+  }, [updateProduct]);
   const resetFields = () => {
     setName("");
     setPrice("");
@@ -42,31 +63,46 @@ const createProductScreen = () => {
 
   const onSubmit = () => {
     if (isUpdating) {
-      onUpdatingCreate();
+      onUpdate();
     } else {
       onCreate();
     }
   };
-  const onUpdatingCreate = () => {
+  const onUpdate = () => {
     if (!validateInput()) {
       return false;
     }
 
-    console.warn("Updating product == ", name, price);
-
+    console.log("Updating product == ", name, price);
     // save in the database
+    updateProduct(
+      { id, name, price: parseFloat(price), image },
+      {
+        onSuccess: () => {
+          resetFields();
+          router.back();
+        },
+      },
+    );
     resetFields();
   };
+
   const onCreate = () => {
     if (!validateInput()) {
       return false;
     }
 
     console.warn("Creating product == ", name, price);
-
     // save in the database
-    insertProduct({ name, price: parseFloat(price), image });
-    resetFields();
+    insertProduct(
+      { name, price: parseFloat(price), image },
+      {
+        onSuccess: () => {
+          resetFields();
+          router.back();
+        },
+      },
+    );
   };
 
   const pickImage = async () => {
@@ -100,7 +136,12 @@ const createProductScreen = () => {
     }
   };
   const onDelete = () => {
-    console.warn("DELETE !!!!");
+    deleteProduct(id, {
+      onSuccess: () => {
+        resetFields();
+        router.replace("/(admin)");
+      },
+    });
   };
 
   const confirmDelete = () => {

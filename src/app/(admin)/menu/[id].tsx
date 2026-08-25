@@ -34,8 +34,6 @@ const ProductDetailsScreen = () => {
     router.push("/cart");
   };
 
-  console.warn("Product" + product);
-
   if (isLoading) {
     return <ActivityIndicator />;
   }

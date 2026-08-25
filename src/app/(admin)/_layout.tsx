@@ -1,7 +1,7 @@
 import { useClientOnlyValue } from "@/src/app/components/useClientOnlyValue";
 import { useColorScheme } from "@/src/app/components/useColorScheme";
 import Colors from "@/src/app/constants/Colors";
-import { Tabs } from "expo-router";
+import { Redirect, Tabs } from "expo-router";
 
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 
@@ -14,6 +14,11 @@ function TabBarIcon(props: {
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
+  const { isAdmin } = useAuth();
+
+  if (!isAdmin) {
+    return <Redirect href={"/"} />;
+  }
 
   return (
     <Tabs
@@ -50,4 +55,7 @@ export default function TabLayout() {
       />
     </Tabs>
   );
+}
+function useAuth(): { isAdmin: any } {
+  throw new Error("Function not implemented.");
 }
